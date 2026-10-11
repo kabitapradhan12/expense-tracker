@@ -1,0 +1,47 @@
+<h2>Monthly summary</h2>
+
+<form method="get">
+  <input type="month" name="ym" value="{{ ym }}">
+  <button type="submit">Show</button>
+</form>
+
+<h3>Total: ₹{{ total }}</h3>
+{% if budget %}
+  <p>Budget: ₹{{ budget.limit }} | Used: {{ percent }}% | Remaining: ₹{{ remaining }}</p>
+  {% if status == 'over' %}
+    <p style="color: red;"><strong>You are over budget this month!</strong></p>
+  {% elif status == 'near' %}
+    <p style="color: orange;"><strong>Careful, you have used {{ percent }}% of your budget.</strong></p>
+  {% else %}
+    <p style="color: green;">You are within budget.</p>
+  {% endif %}
+{% else %}
+  <p>No budget set for this month.</p>
+{% endif %}
+<p><a href="{% url 'budget_set' %}">Set or change budget</a></p>
+<ul>
+  {% for row in by_category %}
+    <li>{{ row.category__name|default:"Uncategorized" }}: ₹{{ row.total }}</li>
+  {% empty %}
+    <li>No expenses this month.</li>
+  {% endfor %}
+</ul>
+
+<div style="max-width: 400px;">
+  <canvas id="chart"></canvas>
+</div>
+
+{{ labels|json_script:"labels-data" }}
+{{ values|json_script:"values-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById('labels-data').textContent);
+  const values = JSON.parse(document.getElementById('values-data').textContent);
+  new Chart(document.getElementById('chart'), {
+    type: 'pie',
+    data: { labels: labels, datasets: [{ data: values }] }
+  });
+</script>
+
+<p><a href="{% url 'expense_list' %}">Back to expenses</a></p>

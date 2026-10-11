@@ -1,0 +1,7 @@
+<h2>Set monthly budget</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save budget</button>
+</form>
+<a href="{% url 'summary' %}">Back</a>

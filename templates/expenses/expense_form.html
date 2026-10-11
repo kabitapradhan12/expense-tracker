@@ -1,0 +1,14 @@
+<h2>{{ title }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save</button>
+</form>
+
+{% if expense %}
+  <p><a href="{% url 'expense_delete' expense.pk %}">Delete this expense</a></p>
+{% endif %}
+
+<p><a href="{% url 'category_add' %}">+ New category</a></p>
+<a href="{% url 'expense_list' %}">Back</a>

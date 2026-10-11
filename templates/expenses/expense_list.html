@@ -1,0 +1,37 @@
+<h2>Hello, {{ request.user.username }}</h2>
+
+<form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit">Logout</button>
+</form>
+
+<p><a href="{% url 'expense_add' %}">+ Add expense</a></p>
+
+<h3>Filter</h3>
+<form method="get">
+  <select name="category">
+    <option value="">All categories</option>
+    {% for c in categories %}
+      <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  From <input type="date" name="start" value="{{ request.GET.start }}">
+  To <input type="date" name="end" value="{{ request.GET.end }}">
+  <input type="text" name="q" placeholder="Search notes" value="{{ request.GET.q }}">
+  <button type="submit">Apply</button>
+  <a href="{% url 'expense_list' %}">Reset</a>
+</form>
+
+<h3>Your expenses (Total: ₹{{ total }})</h3>
+<ul>
+  {% for e in expenses %}
+    <li>
+      {{ e.date }} | {{ e.category }} | ₹{{ e.amount }} | {{ e.note }}
+      <a href="{% url 'expense_edit' e.pk %}">Edit</a> |
+      <a href="{% url 'expense_delete' e.pk %}">Delete</a>
+    </li>
+  {% empty %}
+    <li>No expenses found.</li>
+  {% endfor %}
+</ul>
+<p><a href="{% url 'summary' %}">Monthly summary</a></p>
