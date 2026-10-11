@@ -1,37 +1,61 @@
-<h2>Hello, {{ request.user.username }}</h2>
+{% extends 'base.html' %}
+{% block title %}Expenses{% endblock %}
 
-<form method="post" action="{% url 'logout' %}">
-  {% csrf_token %}
-  <button type="submit">Logout</button>
-</form>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="m-0">Your expenses</h3>
+  <a href="{% url 'expense_add' %}" class="btn btn-primary">+ Add expense</a>
+</div>
 
-<p><a href="{% url 'expense_add' %}">+ Add expense</a></p>
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <select name="category">
+          <option value="">All categories</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><input type="date" name="start" value="{{ request.GET.start }}"></div>
+      <div class="col-md-2"><input type="date" name="end" value="{{ request.GET.end }}"></div>
+      <div class="col-md-3"><input type="text" name="q" placeholder="Search notes" value="{{ request.GET.q }}"></div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-dark">Apply</button>
+        <a href="{% url 'expense_list' %}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
 
-<h3>Filter</h3>
-<form method="get">
-  <select name="category">
-    <option value="">All categories</option>
-    {% for c in categories %}
-      <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
-    {% endfor %}
-  </select>
-  From <input type="date" name="start" value="{{ request.GET.start }}">
-  To <input type="date" name="end" value="{{ request.GET.end }}">
-  <input type="text" name="q" placeholder="Search notes" value="{{ request.GET.q }}">
-  <button type="submit">Apply</button>
-  <a href="{% url 'expense_list' %}">Reset</a>
-</form>
-
-<h3>Your expenses (Total: ₹{{ total }})</h3>
-<ul>
-  {% for e in expenses %}
-    <li>
-      {{ e.date }} | {{ e.category }} | ₹{{ e.amount }} | {{ e.note }}
-      <a href="{% url 'expense_edit' e.pk %}">Edit</a> |
-      <a href="{% url 'expense_delete' e.pk %}">Delete</a>
-    </li>
-  {% empty %}
-    <li>No expenses found.</li>
-  {% endfor %}
-</ul>
-<p><a href="{% url 'summary' %}">Monthly summary</a></p>
+<div class="card shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between">
+    <strong>Expenses</strong>
+    <span class="badge bg-success fs-6">Total: ₹{{ total }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Date</th><th>Category</th><th>Amount</th><th>Note</th><th class="text-end">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for e in expenses %}
+          <tr>
+            <td>{{ e.date }}</td>
+            <td><span class="badge bg-secondary">{{ e.category|default:"-" }}</span></td>
+            <td>₹{{ e.amount }}</td>
+            <td>{{ e.note }}</td>
+            <td class="text-end">
+              <a href="{% url 'expense_edit' e.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+              <a href="{% url 'expense_delete' e.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No expenses found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

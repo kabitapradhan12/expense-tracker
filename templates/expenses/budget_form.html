@@ -1,7 +1,20 @@
-<h2>Set monthly budget</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save budget</button>
-</form>
-<a href="{% url 'summary' %}">Back</a>
+{% extends 'base.html' %}
+{% block title %}Set budget{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Set monthly budget</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary">Save budget</button>
+          <a href="{% url 'summary' %}" class="btn btn-outline-secondary">Back</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

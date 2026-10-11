@@ -1,34 +1,64 @@
-<h2>Monthly summary</h2>
+{% extends 'base.html' %}
+{% block title %}Monthly summary{% endblock %}
 
-<form method="get">
-  <input type="month" name="ym" value="{{ ym }}">
-  <button type="submit">Show</button>
-</form>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="m-0">Monthly summary</h3>
+  <form method="get" class="d-flex gap-2">
+    <input type="month" name="ym" value="{{ ym }}">
+    <button type="submit" class="btn btn-dark">Show</button>
+  </form>
+</div>
 
-<h3>Total: ₹{{ total }}</h3>
-{% if budget %}
-  <p>Budget: ₹{{ budget.limit }} | Used: {{ percent }}% | Remaining: ₹{{ remaining }}</p>
-  {% if status == 'over' %}
-    <p style="color: red;"><strong>You are over budget this month!</strong></p>
-  {% elif status == 'near' %}
-    <p style="color: orange;"><strong>Careful, you have used {{ percent }}% of your budget.</strong></p>
-  {% else %}
-    <p style="color: green;">You are within budget.</p>
-  {% endif %}
-{% else %}
-  <p>No budget set for this month.</p>
-{% endif %}
-<p><a href="{% url 'budget_set' %}">Set or change budget</a></p>
-<ul>
-  {% for row in by_category %}
-    <li>{{ row.category__name|default:"Uncategorized" }}: ₹{{ row.total }}</li>
-  {% empty %}
-    <li>No expenses this month.</li>
-  {% endfor %}
-</ul>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Total spent</h5>
+        <h2 class="text-primary">₹{{ total }}</h2>
+        <hr>
+        {% if budget %}
+          <p class="mb-1">Budget: ₹{{ budget.limit }} | Remaining: ₹{{ remaining }}</p>
+          <div class="progress mb-3">
+            <div class="progress-bar {% if status == 'over' %}bg-danger{% elif status == 'near' %}bg-warning{% else %}bg-success{% endif %}"
+                 style="width: {{ percent }}%">{{ percent }}%</div>
+          </div>
+          {% if status == 'over' %}
+            <div class="alert alert-danger mb-0"><strong>You are over budget this month!</strong></div>
+          {% elif status == 'near' %}
+            <div class="alert alert-warning mb-0">Careful, you have used {{ percent }}% of your budget.</div>
+          {% else %}
+            <div class="alert alert-success mb-0">You are within budget.</div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted">No budget set for this month.</p>
+        {% endif %}
+        <a href="{% url 'budget_set' %}" class="btn btn-outline-primary btn-sm mt-3">Set or change budget</a>
+      </div>
+    </div>
 
-<div style="max-width: 400px;">
-  <canvas id="chart"></canvas>
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-white"><strong>By category</strong></div>
+      <ul class="list-group list-group-flush">
+        {% for row in by_category %}
+          <li class="list-group-item d-flex justify-content-between">
+            {{ row.category__name|default:"Uncategorized" }}<span>₹{{ row.total }}</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No expenses this month.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Spending by category</h5>
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+  </div>
 </div>
 
 {{ labels|json_script:"labels-data" }}
@@ -39,9 +69,8 @@
   const labels = JSON.parse(document.getElementById('labels-data').textContent);
   const values = JSON.parse(document.getElementById('values-data').textContent);
   new Chart(document.getElementById('chart'), {
-    type: 'pie',
+    type: 'doughnut',
     data: { labels: labels, datasets: [{ data: values }] }
   });
 </script>
-
-<p><a href="{% url 'expense_list' %}">Back to expenses</a></p>
+{% endblock %}
